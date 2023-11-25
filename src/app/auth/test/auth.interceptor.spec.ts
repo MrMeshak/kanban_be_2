@@ -262,6 +262,11 @@ describe('auth - AuthInterceptor', () => {
           expect(req.headers.cookie).toBe(
             'authToken=newAuthToken;refreshToken=newRefreshToken;',
           );
+          expect(mockRedisService.set).toHaveBeenCalledWith(
+            RedisPrefix.RefreshToken,
+            'userId',
+            'newRefreshToken',
+          );
         },
       });
 

@@ -135,11 +135,15 @@ export class AuthInterceptor implements NestInterceptor {
     };
 
     return next.handle().pipe(
-      tap(() => {
+      tap(async () => {
         const res: Response = context.switchToHttp().getResponse();
         const authToken = this.jwtService.createAuthToken(userId);
         const refreshToken = this.jwtService.createRefreshToken(authToken);
-        this.redisService.set(RedisPrefix.RefreshToken, userId, refreshToken);
+        await this.redisService.set(
+          RedisPrefix.RefreshToken,
+          userId,
+          refreshToken,
+        );
         res.setHeader('Set-Cookie', [
           cookie.serialize('authToken', authToken, {
             httpOnly: true,
