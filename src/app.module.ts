@@ -6,6 +6,7 @@ import { UserModule } from './app/user/user.module';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { RedisModule } from './redis/redis.module';
 import { JwtModule } from './utils/jwt/jwt.module';
+import { AuthModule } from './app/auth/auth.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { JwtModule } from './utils/jwt/jwt.module';
     UserModule,
     RedisModule,
     JwtModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

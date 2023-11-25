@@ -6,20 +6,20 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable, map, tap } from 'rxjs';
-import cookie from 'cookie';
+import * as cookie from 'cookie';
 import { Request, Response } from 'express';
-import { JwtExpiry, JwtService } from 'src/utils/jwt/jwt.service';
+import { JwtExpiry, JwtService } from '../../utils/jwt/jwt.service';
 import { ITokenPayload } from 'jsonwebtoken';
-import { RedisPrefix, RedisService } from 'src/redis/redis.service';
+import { RedisPrefix, RedisService } from '../../redis/redis.service';
 import { UserService } from '../user/user.service';
 import { UserStatus } from '../user/enitity/user.entity';
 
-interface AuthContext {
+export interface AuthContext {
   userId?: string;
   message: string;
 }
 
-interface RequestWithAuthContext extends Request {
+export interface RequestWithAuthContext extends Request {
   authContext: AuthContext;
 }
 
@@ -58,6 +58,7 @@ export class AuthInterceptor implements NestInterceptor {
         ignoreExpiration: true,
       });
     } catch (err) {
+      console.log(err);
       req.authContext = {
         userId: undefined,
         message: 'invalid authToken',
@@ -97,12 +98,16 @@ export class AuthInterceptor implements NestInterceptor {
       RedisPrefix.RefreshToken,
       userId,
     );
+
+    console.log(storedRefreshToken);
+    console.log(refreshToken);
     if (refreshToken !== storedRefreshToken) {
       await this.redisService.delete(RedisPrefix.RefreshToken, userId);
       req.authContext = {
         userId: undefined,
         message: 'refresh token has already been used',
       };
+      console.log(req.authContext);
       return next.handle();
     }
 
@@ -134,6 +139,7 @@ export class AuthInterceptor implements NestInterceptor {
         const res: Response = context.switchToHttp().getResponse();
         const authToken = this.jwtService.createAuthToken(userId);
         const refreshToken = this.jwtService.createRefreshToken(authToken);
+        this.redisService.set(RedisPrefix.RefreshToken, userId, refreshToken);
         res.setHeader('Set-Cookie', [
           cookie.serialize('authToken', authToken, {
             httpOnly: true,
