@@ -13,7 +13,7 @@ export class RedisService {
     this.redisClient.disconnect();
   }
 
-  async get(prefix: RedisPrefix, key: string): Promise<string> {
+  async get(prefix: RedisPrefix, key: string): Promise<string | null> {
     return await this.redisClient.get(`${prefix}:${key}`);
   }
 
